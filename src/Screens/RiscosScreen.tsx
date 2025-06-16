@@ -41,6 +41,7 @@ const RiskTestScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.title}>ReInveste</Text>
       <Text style={styles.question}>{questions[currentQuestion]}</Text>
       {options.map((option, index) => (
         <TouchableOpacity
@@ -56,10 +57,36 @@ const RiskTestScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, justifyContent: "center", backgroundColor: "#fff" },
-  question: { fontSize: 20, marginBottom: 30, textAlign: "center" },
-  button: { backgroundColor: "#0D3B66", padding: 15, borderRadius: 5, marginVertical: 10, alignItems: "center" },
-  buttonText: { color: "#fff", fontWeight: "bold" },
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#124668", 
+    padding: 20,
+  },
+  question: { 
+  color: "#fff",
+  fontSize: 20, 
+  marginBottom: 30, 
+  textAlign: "center" 
+},
+  button: { 
+    backgroundColor: "#1e9e89", 
+    padding: 15, 
+    borderRadius: 5, 
+    marginVertical: 10, 
+    alignItems: "center" 
+  },
+  buttonText: { 
+    color: "#fff", 
+    fontWeight: "bold" 
+  },
+   title: {
+    fontSize: 30,
+    fontWeight: "bold",
+    color: "#fff", 
+    marginBottom: 40,
+  },
 });
 
 export default RiskTestScreen;

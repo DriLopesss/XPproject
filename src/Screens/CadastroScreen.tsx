@@ -1,27 +1,12 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-  StyleSheet,
-} from "react-native";
-import axios from "axios";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../types/navigation";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-type CadastroScreenNavigationProp = StackNavigationProp<
-  RootStackParamList,
-  "Cadastro"
->;
 
-type Props = {
-  navigation: CadastroScreenNavigationProp;
-};
-
-// Altere para o IP correto se estiver usando celular físico
-const API_URL = "http://10.0.2.2:3000";
+type CadastroScreenNavigationProp = StackNavigationProp<RootStackParamList, "Cadastro">;
+type Props = { navigation: CadastroScreenNavigationProp };
 
 const CadastroScreen: React.FC<Props> = ({ navigation }) => {
   const [nome, setNome] = useState("");
@@ -30,93 +15,84 @@ const CadastroScreen: React.FC<Props> = ({ navigation }) => {
 
   const handleCadastro = async () => {
     if (!nome || !email || !senha) {
-      Alert.alert("Preencha todos os campos");
+      Alert.alert("Erro", "Preencha todos os campos");
       return;
     }
 
+    const novoUsuario = { nome, email, senha };
     try {
-      const novoUsuario = { nome, email, senha };
-      const res = await axios.post(`${API_URL}/users`, novoUsuario);
-
-      if (res.status === 201) {
-        Alert.alert("Cadastro concluído", "Sua conta foi criada com sucesso!");
-        navigation.replace("RiskTest");
-      } else {
-        Alert.alert("Erro", "Não foi possível cadastrar. Tente novamente.");
-      }
+      const usuariosSalvos = await AsyncStorage.getItem("usuarios");
+      const usuarios = usuariosSalvos ? JSON.parse(usuariosSalvos) : [];
+      usuarios.push(novoUsuario);
+      await AsyncStorage.setItem("usuarios", JSON.stringify(usuarios));
+      Alert.alert("Sucesso", "Usuário cadastrado com sucesso!");
+      navigation.replace("RiskTest");
     } catch (error) {
-      console.error("Erro ao cadastrar:", error);
-      Alert.alert("Erro", "Falha na conexão com o servidor.");
+      Alert.alert("Erro", "Não foi possível cadastrar o usuário");
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Cadastro</Text>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Nome"
-        value={nome}
-        onChangeText={setNome}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="E-mail"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Senha"
-        secureTextEntry
-        value={senha}
-        onChangeText={setSenha}
-      />
-
+      <Text style={styles.title}>Criar Conta</Text>
+      <TextInput style={styles.input} placeholder="Nome" onChangeText={setNome} />
+      <TextInput style={styles.input} placeholder="Email" onChangeText={setEmail} keyboardType="email-address" />
+      <TextInput style={styles.input} placeholder="Senha" onChangeText={setSenha} secureTextEntry />
       <TouchableOpacity style={styles.button} onPress={handleCadastro}>
-        <Text style={styles.buttonText}>Criar Conta</Text>
-      </TouchableOpacity>
+              <Text style={styles.buttonText}>Entrar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+              <Text style={styles.linkText}>Ja tenho uma conta</Text>
+            </TouchableOpacity>
+
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+   container: {
     flex: 1,
-    padding: 20,
     justifyContent: "center",
-    backgroundColor: "#fff",
+    alignItems: "center",
+    backgroundColor: "#124668", 
+    padding: 20,
   },
   title: {
-    fontSize: 24,
-    marginBottom: 20,
-    textAlign: "center",
-    color: "#0D3B66",
+    fontSize: 30,
     fontWeight: "bold",
+    color: "#fff", 
+    marginBottom: 40,
   },
-  input: {
-    borderWidth: 1,
-    padding: 10,
-    marginBottom: 10,
-    borderRadius: 5,
-    borderColor: "#ccc",
-    backgroundColor: "#fff",
+  subtitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#fff", 
+    marginBottom: 40,
   },
   button: {
-    backgroundColor: "#0D3B66",
-    padding: 12,
-    borderRadius: 5,
+    backgroundColor: "#1e9e89", 
+    padding: 15,
+    borderRadius: 10,
+    width: "80%",
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 15,
   },
   buttonText: {
-    color: "#fff",
+    color: "#fff", 
     fontWeight: "bold",
     fontSize: 16,
   },
+  input: { 
+    backgroundColor: "#fff", 
+    width: "80%", 
+    borderColor: "#ccc", 
+    borderWidth: 1, 
+    borderRadius: 8, 
+    padding: 10, 
+    marginBottom: 15 },
+  linkText: {
+    color: "#fff",
+  }
 });
 
 export default CadastroScreen;

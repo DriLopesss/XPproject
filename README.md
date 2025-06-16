@@ -1,3 +1,16 @@
+#  Sprint 1 e 2
+
+Um aplicativo mobile desenvolvido em **React Native com Expo**, com o objetivo de **ajudar pessoas que enfrentam vício em apostas** a redirecionarem seus hábitos para investimentos saudáveis e educação financeira.
+
+# Objetivo
+
+O ReInveste atua como um guia de suporte e reeducação para apostadores, oferecendo:
+- Apoio psicológico,
+- Exercícios de meditação,
+- Aulas de educação financeira,
+- Registro de progresso pessoal (dias sem apostas),
+- Ferramentas de investimento simples e acessíveis.
+
 # Configurando o projeto
 Após clonar o repositório, rode o comando para instalar os pacotes:
 
@@ -19,6 +32,11 @@ Para rodar o projeto num dispositivo Web:
 Para rodar o json server: 
 
 `json-server --watch './src/db/db.json' --port 3000`
+
+# Dependências do Projeto
+npm install
+npm install @react-navigation/native @react-navigation/native-stack @react-navigation/bottom-tabs
+npx expo install react-native-screens react-native-safe-area-context react-native-gesture-handler expo-linking
 
 
 # Projeto feito por

@@ -1,12 +1,13 @@
+// src/types/navigation.ts
 export type RootStackParamList = {
   Start: undefined;
   Login: undefined;
   Cadastro: undefined;
-  RiskTest: undefined;
   Home: undefined;
-  Contador: undefined;
-  Alerta: undefined;
-  Tratamentos: undefined;
+  RiskTest: undefined;
+  Tratamento: undefined;
   Carteira: undefined;
   Perfil: undefined;
+  Contador: undefined;
+  Alerta: undefined;
 };

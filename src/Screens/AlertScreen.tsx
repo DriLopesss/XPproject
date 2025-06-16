@@ -6,7 +6,7 @@ import { RootStackParamList } from "../types/navigation";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Alerta">;
 
-const Alerta: React.FC = () => {
+const AlertScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
 
   return (
@@ -15,8 +15,8 @@ const Alerta: React.FC = () => {
       <Text style={styles.message}>Tudo bem. Recomeçar faz parte do processo.</Text>
       <Text style={styles.message}>Respire fundo e tente novamente!</Text>
 
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("Home")}>
-        <Text style={styles.buttonText}>Voltar para o Início</Text>
+      <TouchableOpacity style={styles.button} onPress={() => navigation.replace("Tratamento")}>
+        <Text style={styles.buttonText}>Ajuda</Text>
       </TouchableOpacity>
     </View>
   );
@@ -55,4 +55,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Alerta;
+export default AlertScreen;
