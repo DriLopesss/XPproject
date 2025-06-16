@@ -26,3 +26,7 @@ Para rodar o json server:
 * Adriano Lopes - RM 98574
 * Henrique de Brito - RM 98831
 * Rodrigo Lima - RM 98326
+
+# Figma
+
+https://www.figma.com/design/Ah9oBD9nEgRMHxhXhVEaNF/Sem-t%C3%ADtulo?node-id=0-1&t=OVKnQN0K8JkBJyRy-1
