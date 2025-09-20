@@ -1,0 +1,72 @@
+name: CI + DAST
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  sast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm install
+      - run: npx semgrep --config=auto # ou seu comando específico
+      # etc para SAST...
+
+  dast:
+    runs-on: ubuntu-latest
+    needs: sast
+    # não usando Docker services do app, mas rodando localmente
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Start JSON Server
+        run: |
+          npx json-server --watch ./src/db/db.json --port 3000 &
+          # aguarda o servidor subir
+          sleep 5
+
+      - name: Start Expo Web
+        run: |
+          npm run web &
+          # espera um pouco para web ficar disponível
+          sleep 30
+
+      - name: Run OWASP ZAP Baseline Scan
+        uses: docker://owasp/zap2docker-stable
+        with:
+          # monta a pasta atual para pegar relatório
+          args: zap-baseline.py -t http://localhost:3000 -r zap-report-json-server.html || true
+
+      - name: Upload ZAP report (JSON server)
+        uses: actions/upload-artifact@v3
+        with:
+          name: zap-report-json-server
+          path: zap-report-json-server.html
+
+      # opcional: scan também do app web (se for servida em HTTP distinto)
+      - name: Run OWASP ZAP Baseline Scan on Web Frontend
+        uses: docker://owasp/zap2docker-stable
+        with:
+          args: zap-baseline.py -t http://localhost:19006 -r zap-report-web.html || true
+          # OBS: ajusta a porta se a expo web usar outra
+
+      - name: Upload ZAP report (web frontend)
+        uses: actions/upload-artifact@v3
+        with:
+          name: zap-report-web
+          path: zap-report-web.html
