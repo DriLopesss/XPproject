@@ -24,9 +24,10 @@ jobs:
           npx json-server --watch ./src/db/db.json --port 3000 &
           sleep 10
 
-      - name: Run OWASP ZAP Baseline Scan
+            - name: Run OWASP ZAP Baseline Scan
         run: |
-          docker run -v $(pwd):/zap/wrk -t owasp/zap2docker-stable \
+          mkdir -p reports
+          docker run -v $(pwd)/reports:/zap/wrk -t owasp/zap2docker-stable \
             zap-baseline.py -t http://host.docker.internal:3000 \
             -r zap-report.html || true
 
@@ -34,4 +35,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: zap-report
-          path: zap-report.html
+          path: reports/zap-report.html
+
