@@ -9,6 +9,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "test": "echo \"No tests yet - build passed.\""
+    "resolutions": {
+  "form-data": "4.0.4"}
   },
   "dependencies": {
     "@expo/metro-runtime": "~5.0.4",
