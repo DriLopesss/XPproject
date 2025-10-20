@@ -1,39 +1,108 @@
-name: DAST Scan
+name: CI-Security-Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   pull_request:
+    branches: [ main ]
 
 jobs:
-  dast:
+  # --- SAST Job ---
+  sast:
+    name: SAST - Semgrep Scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Semgrep
+        run: |
+          python -m pip install --upgrade pip
+          pip install semgrep jq
+
+      - name: Run Semgrep (auto rules)
+        run: |
+          semgrep --config auto --json --output semgrep-report.json || true
+
+      - name: Upload Semgrep report
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-report
+          path: semgrep-report.json
+
+      - name: Fail if critical findings (optional)
+        run: |
+          if jq -e '.results[] | select(.extra.severity=="CRITICAL")' semgrep-report.json > /dev/null 2>&1; then
+            echo "Critical vulnerabilities found by Semgrep."
+            jq '.results[] | {path: .path, start: .start.line, check_id: .check_id, severity: .extra.severity, message: .extra.message}' semgrep-report.json
+            exit 1
+          else
+            echo "No critical issues found by Semgrep."
+          fi
+
+  # --- TESTS + SCA ---
+  test-and-sca:
+    name: Unit Tests & SCA
+    needs: sast
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: '18'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Start JSON Server (API)
+      - name: Run unit and integration tests
+        run: npm test
+
+      - name: Run Snyk dependency check
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: |
-          npx json-server --watch ./src/db/db.json --port 3000 &
+          npm install -g snyk
+          snyk test --severity-threshold=high || exit 1
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ./reports || ./coverage
+
+  # --- DAST ---
+  dast:
+    name: DAST - OWASP ZAP
+    needs: test-and-sca
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Start app for DAST
+        run: |
+          docker-compose up -d
           sleep 10
 
       - name: Run OWASP ZAP Baseline Scan
-        run: |
-          mkdir -p reports
-          docker run --network host -v $(pwd)/reports:/zap/wrk -t owasp/zap2docker-stable \
-            zap-baseline.py -t http://127.0.0.1:3000 \
-            -r zap-report.html || true
+        uses: zaproxy/action-baseline@v0.6.1
+        with:
+          target: "http://localhost:3000"
+          rules_file_name: ".zap/rules.tsv"
+          cmd_options: "-a"
 
-
-      - name: Upload ZAP report
+      - name: Upload ZAP Report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: zap-report
-          path: reports/zap-report.html
+          path: zap_scan.log
